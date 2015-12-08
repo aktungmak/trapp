@@ -1,0 +1,27 @@
+the core is the application state, which holds the tree and our current position
+
+there is an interface which describes how a ui needs to communicate, it has the following methods:
+
+promptUnbuffered(prompt string) string
+promptBuffered(prompt string) string
+displayPath(path []string)
+displayContent(content string)
+clearContent()
+
+each ui 'driver' implements these methods to display the output as it pleases. it is envisioned that there will be a line at the top which shows the current path, a central content area and then the prompt at the bottom which will accept the options.
+
+Each of the "actions" will take a ptr to the application struct and then manipulate it as neccessary. it can use the ui methods described above to get further input as neccessary.
+
+the ui driver handles all interactions with the user, so the application engine knows nothing about how the info is actually presented.
+
+the application is described in terms of map[string]Node. eventually this could be generated from an XML file, but initially it can be written out by hand.
+
+a Node struct looks like this:
+
+type Node struct {
+     name string
+     func func(c *appState)
+     children map[string]Node
+}
+
+the application holds a list of all the nodes visited so far, which allows us to navigate back up the tree
