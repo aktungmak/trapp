@@ -2,8 +2,11 @@ package trapp
 
 import (
 	"errors"
-	"log"
 )
+
+// a mapping of strings to nodes, part of the
+// tree's basic structure
+type OptMap map[string]*Node
 
 // represents a single node of the tree
 // can have children nodes, or a function
@@ -11,12 +14,12 @@ import (
 type Node struct {
 	Name string
 	Func func(interface{})
-	Opts map[string]*Node
+	Opts OptMap
 
 	parent *Node
 }
 
-func NewNode(name string, f func(interface{}), opts map[string]*Node) *Node {
+func NewNode(name string, f func(interface{}), opts OptMap) *Node {
 	return &Node{
 		Name: name,
 		Func: f,
@@ -27,7 +30,7 @@ func NewNodeBlank() *Node {
 	return &Node{
 		Name: "",
 		Func: func(interface{}) {},
-		Opts: make(map[string]*Node),
+		Opts: make(OptMap),
 	}
 }
 
@@ -40,27 +43,31 @@ type Trapp struct {
 	// gets passed to every action
 }
 
-func NewTrapp(tree *Node, ui UiDriver, cc interface{}) (*Trapp, error) {
+func NewTrapp(tree *Node, ui UiDriver, cc interface{}) *Trapp {
 	t := &Trapp{}
 
-	err := validateTree(tree)
-	if err != nil {
-		return t, err
-	}
 	t.Root = tree
 	t.Current = tree
 	t.Ui = ui
 	t.Cc = cc
+
+	return t
 }
 
 func (t *Trapp) Select(opt string) error {
-	next, ok := t.Current[opt]
+	next, ok := t.Current.Opts[opt]
 	if !ok {
-		return Errors.New("not a valid option")
+		return errors.New("not a valid option")
 	}
-	// if has children, change to that
-	// set the parent field of the child so we can go back
-	// else has func, execute func with t.Cc
+	// execute the func with t.Cc
+	next.Func(t.Cc)
+	// if it has options, change to that
+	if len(next.Opts) > 0 {
+		// set the parent field of the child so we can go back
+		next.parent = t.Current
+		t.Current = next
+	}
+	return nil
 }
 
 // go up one level, setting t.Current to its parent
@@ -76,31 +83,45 @@ func (t *Trapp) Up() *Node {
 //jump to the root of the tree
 func (t *Trapp) Home() {
 	//keep calling Up() until it returns nil
+	for t.Up() != nil {
+	}
 }
 
 // the main loop of the application, that processes each stage
 func (t *Trapp) EventLoop() {
 	for {
 		// print current position in tree
+		t.Ui.DisplayPath(t.GetCurrentPath())
 
 		// print options
 
 		// wait for input
+		opt := t.Ui.Prompt(":")
 
-		// if special, do that
-		// else check if it exists
-
-		// update last
+		// if we got something, try selecting
+		if len(opt) > 0 {
+			err := t.Select(opt)
+			if err != nil {
+				t.Ui.DisplayContent(err.Error())
+			}
+		}
 	}
 }
 
 // get a string slice showing the current position in the tree
 func (t *Trapp) GetCurrentPath() []string {
-
+	p := make([]string, 0)
+	n := t.Current
+	for n != nil {
+		p = append(p, n.Name)
+		n = n.parent
+	}
+	return p
 }
 
-// walk the supplied tree and ensure it is well-formed
-func ValidateTree(tree map[string]*Node) error {
-	// thanks to types, this is actually not needed I think!
-
+type UiDriver interface {
+	Prompt(string) string
+	DisplayPath([]string)
+	DisplayContent(string)
+	ClearContent()
 }

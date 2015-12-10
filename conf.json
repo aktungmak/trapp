@@ -1,0 +1,26 @@
+{
+    "name": "home",
+    "opts": {
+        "a": {
+            "func": "af",
+            "name": "ay"
+        },
+        "b": {
+            "func": "bf",
+            "name": "bee"
+        },
+        "c": {
+            "name": "see",
+            "opts": {
+                "a": {
+                    "func": "caf",
+                    "name": "cay"
+                },
+                "b": {
+                    "func": "cbf",
+                    "name": "cbee"
+                }
+            }
+        }
+    }
+}

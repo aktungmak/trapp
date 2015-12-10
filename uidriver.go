@@ -1,39 +1,44 @@
 package trapp
 
 import (
+	"bufio"
 	"fmt"
+	"os"
+	"strings"
 )
 
-type UiDriver interface {
-	promptUnbuffered(string) string
-	promptBuffered(string) string
-	displayPath([]string)
-	displayContent(string)
-	clearContent()
+// implements the UiDriver interface to provide command line ui
+type ClUiDriver struct {
+	Last   string
+	Reader *bufio.Reader
 }
 
-type clUiDriver struct {
+func NewClUiDriver() *ClUiDriver {
+	return &ClUiDriver{
+		Reader: bufio.NewReader(os.Stdin),
+	}
 }
 
 // read a single character from the input without waiting for enter
-func (d *clUiDriver) promptUnbuffered(prompt string) string {
-	var c string
-	fmt.Scan(&c)
-	return c
+func (d *ClUiDriver) Prompt(prompt string) string {
+	fmt.Print(prompt)
+	text, err := d.Reader.ReadString('\n')
+	if err != nil {
+		fmt.Printf("ERROR: %v\n", err)
+		return ""
+	} else {
+		return text
+	}
 }
 
-func (d *clUiDriver) promptBuffered(prompt string) string {
-
+func (d *ClUiDriver) DisplayPath(path []string) {
+	fmt.Println(strings.Join(path, " > "))
 }
 
-func (d *clUiDriver) displayPath(path []string) {
-
+func (d *ClUiDriver) DisplayContent(content string) {
+	fmt.Printf("%s\n\n", content)
 }
 
-func (d *clUiDriver) displayContent(content string) {
-	fmt
-}
-
-func (d *clUiDriver) clearContent() {
-
+func (d *ClUiDriver) ClearContent() {
+	// doesn't apply to this type of ui
 }
