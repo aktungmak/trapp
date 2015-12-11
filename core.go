@@ -4,6 +4,11 @@ import (
 	"errors"
 )
 
+const (
+	UP   string = "_TRAPP_GO_UP_"
+	HOME string = "_TRAPP_GO_HOME_"
+)
+
 // a mapping of strings to nodes, part of the
 // tree's basic structure
 type OptMap map[string]*Node
@@ -13,13 +18,13 @@ type OptMap map[string]*Node
 // or both
 type Node struct {
 	Name string
-	Func func(interface{})
+	Func func(*Trapp)
 	Opts OptMap
 
 	parent *Node
 }
 
-func NewNode(name string, f func(interface{}), opts OptMap) *Node {
+func NewNode(name string, f func(*Trapp), opts OptMap) *Node {
 	return &Node{
 		Name: name,
 		Func: f,
@@ -29,38 +34,53 @@ func NewNode(name string, f func(interface{}), opts OptMap) *Node {
 func NewNodeBlank() *Node {
 	return &Node{
 		Name: "",
-		Func: func(interface{}) {},
+		Func: func(*Trapp) {},
 		Opts: make(OptMap),
 	}
 }
 
 // tree application core.
 type Trapp struct {
-	Root    *Node       // the base of the tree
-	Current *Node       // our current location
-	Ui      UiDriver    // our link to the outside world
-	Cc      interface{} // current-continuation, represents the app data
-	// gets passed to every action
+	// the base of the tree
+	Root *Node
+	// our current location
+	Current *Node
+	// our link to the outside world
+	Ui UiDriver
+	// current-continuation, represents the app data
+	Cc interface{}
 }
 
 func NewTrapp(tree *Node, ui UiDriver, cc interface{}) *Trapp {
-	t := &Trapp{}
-
-	t.Root = tree
-	t.Current = tree
-	t.Ui = ui
-	t.Cc = cc
+	t := &Trapp{
+		Root:    tree,
+		Current: tree,
+		Ui:      ui,
+		Cc:      cc,
+	}
 
 	return t
 }
 
 func (t *Trapp) Select(opt string) error {
+	// first check for special
+	if opt == UP {
+		t.Up()
+		return nil
+	} else if opt == HOME {
+		t.Home()
+		return nil
+	}
+
+	// now check for regular options
 	next, ok := t.Current.Opts[opt]
 	if !ok {
 		return errors.New("not a valid option")
 	}
-	// execute the func with t.Cc
-	next.Func(t.Cc)
+
+	// execute the func
+	next.Func(t)
+
 	// if it has options, change to that
 	if len(next.Opts) > 0 {
 		// set the parent field of the child so we can go back
@@ -113,7 +133,8 @@ func (t *Trapp) GetCurrentPath() []string {
 	p := make([]string, 0)
 	n := t.Current
 	for n != nil {
-		p = append(p, n.Name)
+		// note that this is prepending!
+		p = append([]string{n.Name}, p...)
 		n = n.parent
 	}
 	return p

@@ -26,7 +26,16 @@ func (d *ClUiDriver) Prompt(prompt string) string {
 	if err != nil {
 		fmt.Printf("ERROR: %v\n", err)
 		return ""
-	} else {
+	}
+	text = strings.TrimSpace(text)
+
+	// check if special
+	switch text {
+	case "up":
+		return UP
+	case "home":
+		return HOME
+	default:
 		return text
 	}
 }
