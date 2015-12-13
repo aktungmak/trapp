@@ -19,6 +19,8 @@ func NewClUiDriver() *ClUiDriver {
 	}
 }
 
+//// UiDriver methods ////
+
 // read a single character from the input without waiting for enter
 func (d *ClUiDriver) Prompt(prompt string) string {
 	fmt.Print(prompt)
@@ -40,6 +42,10 @@ func (d *ClUiDriver) Prompt(prompt string) string {
 	}
 }
 
+func (d *ClUiDriver) DisplayOpts(opts map[string]string) {
+	fmt.Printf("%v", opts)
+}
+
 func (d *ClUiDriver) DisplayPath(path []string) {
 	fmt.Println(strings.Join(path, " > "))
 }
@@ -48,6 +54,12 @@ func (d *ClUiDriver) DisplayContent(content string) {
 	fmt.Printf("%s\n\n", content)
 }
 
+// doesn't apply to this type of ui
 func (d *ClUiDriver) ClearContent() {
-	// doesn't apply to this type of ui
 }
+
+// doesn't apply to this type of ui
+func (d *ClUiDriver) CleanUp() {
+}
+
+//// end UiDriver methods ////

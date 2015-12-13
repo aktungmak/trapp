@@ -109,11 +109,19 @@ func (t *Trapp) Home() {
 
 // the main loop of the application, that processes each stage
 func (t *Trapp) EventLoop() {
+	defer t.Ui.CleanUp()
 	for {
+		t.Ui.ClearContent()
+
 		// print current position in tree
 		t.Ui.DisplayPath(t.GetCurrentPath())
 
-		// print options
+		//show the available options
+		opts := make(map[string]string)
+		for k, v := range t.Current.Opts {
+			opts[k] = v.Name
+		}
+		t.Ui.DisplayOpts(opts)
 
 		// wait for input
 		opt := t.Ui.Prompt(":")
@@ -143,6 +151,8 @@ func (t *Trapp) GetCurrentPath() []string {
 type UiDriver interface {
 	Prompt(string) string
 	DisplayPath([]string)
+	DisplayOpts(map[string]string)
 	DisplayContent(string)
 	ClearContent()
+	CleanUp()
 }
