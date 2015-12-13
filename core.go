@@ -2,11 +2,13 @@ package trapp
 
 import (
 	"errors"
+	"os"
 )
 
 const (
 	UP   string = "_TRAPP_GO_UP_"
 	HOME string = "_TRAPP_GO_HOME_"
+	QUIT string = "_TRAPP_QUIT_"
 )
 
 // a mapping of strings to nodes, part of the
@@ -64,12 +66,18 @@ func NewTrapp(tree *Node, ui UiDriver, cc interface{}) *Trapp {
 
 func (t *Trapp) Select(opt string) error {
 	// first check for special
-	if opt == UP {
+
+	switch opt {
+	case UP:
 		t.Up()
 		return nil
-	} else if opt == HOME {
+	case HOME:
 		t.Home()
 		return nil
+	case QUIT:
+		// todo make this cleaner
+		t.Ui.CleanUp()
+		os.Exit(0)
 	}
 
 	// now check for regular options
@@ -78,8 +86,10 @@ func (t *Trapp) Select(opt string) error {
 		return errors.New("not a valid option")
 	}
 
-	// execute the func
-	next.Func(t)
+	// execute the func if specified
+	if next.Func != nil {
+		next.Func(t)
+	}
 
 	// if it has options, change to that
 	if len(next.Opts) > 0 {
@@ -111,7 +121,7 @@ func (t *Trapp) Home() {
 func (t *Trapp) EventLoop() {
 	defer t.Ui.CleanUp()
 	for {
-		t.Ui.ClearContent()
+		//t.Ui.ClearContent()
 
 		// print current position in tree
 		t.Ui.DisplayPath(t.GetCurrentPath())

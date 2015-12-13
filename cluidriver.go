@@ -37,6 +37,8 @@ func (d *ClUiDriver) Prompt(prompt string) string {
 		return UP
 	case "home":
 		return HOME
+	case "quit":
+		return QUIT
 	default:
 		return text
 	}

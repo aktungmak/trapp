@@ -6,6 +6,11 @@ import (
 	"strings"
 )
 
+const (
+	TB_BG = termbox.ColorDefault
+	TB_FG = termbox.ColorDefault
+)
+
 // this driver uses terbox to display the ui
 type TbUiDriver struct {
 	Last string
@@ -16,7 +21,7 @@ func NewTbUiDriver() *TbUiDriver {
 	if err != nil {
 		panic(err)
 	}
-	termbox.Clear(termbox.ColorWhite, termbox.ColorBlue)
+	termbox.Clear(TB_FG, TB_BG)
 	return &TbUiDriver{}
 }
 
@@ -27,7 +32,9 @@ func (d *TbUiDriver) Prompt(prompt string) string {
 	rbuf := make([]rune, 0)
 promptloop:
 	for {
-		printLine(string(rbuf), 0, 12)
+		termbox.Flush()
+		_, h := termbox.Size()
+		printLine(string(rbuf), 0, h-1)
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			switch ev.Key {
@@ -48,13 +55,27 @@ promptloop:
 			}
 		case termbox.EventError:
 			panic(ev.Err)
+		case termbox.EventResize:
+			d.Redraw()
 		}
 	}
-	return string(rbuf)
+
+	text := string(rbuf)
+	switch text {
+	case "up":
+		return UP
+	case "home":
+		return HOME
+	case "quit":
+		return QUIT
+	default:
+		return text
+	}
 }
 
 func (d *TbUiDriver) DisplayOpts(opts map[string]string) {
-	printLine(fmt.Sprintf("%v", opts), 0, 11)
+	_, h := termbox.Size()
+	printLine(fmt.Sprintf("%v", opts), 0, h-2)
 }
 
 func (d *TbUiDriver) DisplayPath(path []string) {
@@ -62,21 +83,37 @@ func (d *TbUiDriver) DisplayPath(path []string) {
 }
 
 func (d *TbUiDriver) DisplayContent(content string) {
+	printLine(content, 2, 15)
+	lines := strings.Split(content, "\n")
+	_, h := termbox.Size()
+	for i, line := range lines {
+		// todo handle /r/n
+		printLine(line, 0, i+10)
+		if i+1 > h-3 {
+			break
+		}
+	}
 }
 
 func (d *TbUiDriver) ClearContent() {
-	termbox.Clear(termbox.ColorWhite, termbox.ColorBlue)
+	termbox.Clear(TB_FG, TB_BG)
 }
 
 func (d *TbUiDriver) CleanUp() {
 	termbox.Close()
+	fmt.Println("cleaned up")
 }
 
 //// end UiDriver methods ////
 
+func (d *TbUiDriver) Redraw() {
+	termbox.Clear(TB_FG, TB_BG)
+
+}
+
 func printLine(msg string, x, y int) {
 	for i, c := range msg {
-		termbox.SetCell(x+i, y, c, termbox.ColorDefault, termbox.ColorDefault)
+		termbox.SetCell(x+i, y, c, TB_FG, TB_BG)
 	}
 	termbox.Flush()
 }
