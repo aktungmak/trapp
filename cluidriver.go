@@ -13,6 +13,7 @@ type ClUiDriver struct {
 	Reader *bufio.Reader
 }
 
+// constructor
 func NewClUiDriver() *ClUiDriver {
 	return &ClUiDriver{
 		Reader: bufio.NewReader(os.Stdin),
@@ -21,7 +22,6 @@ func NewClUiDriver() *ClUiDriver {
 
 //// UiDriver methods ////
 
-// read a single character from the input without waiting for enter
 func (d *ClUiDriver) Prompt(prompt string) string {
 	fmt.Print(prompt)
 	text, err := d.Reader.ReadString('\n')
@@ -30,6 +30,12 @@ func (d *ClUiDriver) Prompt(prompt string) string {
 		return ""
 	}
 	text = strings.TrimSpace(text)
+
+	if len(text) == 0 {
+		text = d.Last
+	} else {
+		d.Last = text
+	}
 
 	// check if special
 	switch text {

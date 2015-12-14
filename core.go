@@ -121,7 +121,6 @@ func (t *Trapp) Home() {
 func (t *Trapp) EventLoop() {
 	defer t.Ui.CleanUp()
 	for {
-		//t.Ui.ClearContent()
 
 		// print current position in tree
 		t.Ui.DisplayPath(t.GetCurrentPath())
@@ -134,8 +133,9 @@ func (t *Trapp) EventLoop() {
 		t.Ui.DisplayOpts(opts)
 
 		// wait for input
-		opt := t.Ui.Prompt(":")
+		opt := t.Ui.Prompt(": ")
 
+		t.Ui.ClearContent()
 		// if we got something, try selecting
 		if len(opt) > 0 {
 			err := t.Select(opt)

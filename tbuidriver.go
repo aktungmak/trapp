@@ -7,22 +7,27 @@ import (
 )
 
 const (
-	TB_BG = termbox.ColorDefault
-	TB_FG = termbox.ColorDefault
+	TB_BG = termbox.ColorBlue
+	TB_FG = termbox.ColorWhite
 )
 
 // this driver uses terbox to display the ui
 type TbUiDriver struct {
 	Last string
+	w    int
+	h    int
 }
 
+// constructor
 func NewTbUiDriver() *TbUiDriver {
 	err := termbox.Init()
 	if err != nil {
 		panic(err)
 	}
 	termbox.Clear(TB_FG, TB_BG)
-	return &TbUiDriver{}
+	t := &TbUiDriver{}
+	t.w, t.h = termbox.Size()
+	return t
 }
 
 //// UiDriver methods ////
@@ -32,9 +37,7 @@ func (d *TbUiDriver) Prompt(prompt string) string {
 	rbuf := make([]rune, 0)
 promptloop:
 	for {
-		termbox.Flush()
-		_, h := termbox.Size()
-		printLine(string(rbuf), 0, h-1)
+		d.printLine(prompt+string(rbuf), 0, d.h-1)
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			switch ev.Key {
@@ -56,11 +59,19 @@ promptloop:
 		case termbox.EventError:
 			panic(ev.Err)
 		case termbox.EventResize:
-			d.Redraw()
+			d.w, d.h = termbox.Size()
+			termbox.Flush()
 		}
 	}
 
 	text := string(rbuf)
+
+	if len(text) == 0 {
+		text = d.Last
+	} else {
+		d.Last = text
+	}
+
 	switch text {
 	case "up":
 		return UP
@@ -74,22 +85,19 @@ promptloop:
 }
 
 func (d *TbUiDriver) DisplayOpts(opts map[string]string) {
-	_, h := termbox.Size()
-	printLine(fmt.Sprintf("%v", opts), 0, h-2)
+	d.printLine(fmt.Sprintf("%v", opts), 0, d.h-2)
 }
 
 func (d *TbUiDriver) DisplayPath(path []string) {
-	printLine(strings.Join(path, " > "), 0, 0)
+	d.printLine(strings.Join(path, " > "), 0, 0)
 }
 
 func (d *TbUiDriver) DisplayContent(content string) {
-	printLine(content, 2, 15)
 	lines := strings.Split(content, "\n")
-	_, h := termbox.Size()
 	for i, line := range lines {
 		// todo handle /r/n
-		printLine(line, 0, i+10)
-		if i+1 > h-3 {
+		d.printLine(line, 0, i+1)
+		if i+1 > d.h-3 {
 			break
 		}
 	}
@@ -106,12 +114,15 @@ func (d *TbUiDriver) CleanUp() {
 
 //// end UiDriver methods ////
 
-func (d *TbUiDriver) Redraw() {
-	termbox.Clear(TB_FG, TB_BG)
-
+func (d *TbUiDriver) clearLine(x, y int) {
+	for i := x; i < d.w; i++ {
+		termbox.SetCell(i, y, ' ', TB_FG, TB_BG)
+	}
+	termbox.Flush()
 }
 
-func printLine(msg string, x, y int) {
+func (d *TbUiDriver) printLine(msg string, x, y int) {
+	d.clearLine(x, y)
 	for i, c := range msg {
 		termbox.SetCell(x+i, y, c, TB_FG, TB_BG)
 	}
