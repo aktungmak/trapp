@@ -2,7 +2,6 @@ package trapp
 
 import (
 	"errors"
-	"os"
 )
 
 const (
@@ -75,9 +74,7 @@ func (t *Trapp) Select(opt string) error {
 		t.Home()
 		return nil
 	case QUIT:
-		// todo make this cleaner
-		t.Ui.CleanUp()
-		os.Exit(0)
+		return errors.New(QUIT)
 	}
 
 	// now check for regular options
@@ -140,7 +137,11 @@ func (t *Trapp) EventLoop() {
 		if len(opt) > 0 {
 			err := t.Select(opt)
 			if err != nil {
-				t.Ui.DisplayContent(err.Error())
+				if err.Error() == QUIT {
+					break
+				} else {
+					t.Ui.DisplayContent(err.Error())
+				}
 			}
 		}
 	}

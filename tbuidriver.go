@@ -1,7 +1,6 @@
 package trapp
 
 import (
-	"fmt"
 	"github.com/nsf/termbox-go"
 	"strings"
 )
@@ -85,11 +84,16 @@ promptloop:
 }
 
 func (d *TbUiDriver) DisplayOpts(opts map[string]string) {
-	d.printLine(fmt.Sprintf("%v", opts), 0, d.h-2)
+	s := make([]string, 0)
+	// todo make this tidier
+	for k, v := range opts {
+		s = append(s, k+": "+v)
+	}
+	d.printLineInvert(strings.Join(s, " "), 0, d.h-2)
 }
 
 func (d *TbUiDriver) DisplayPath(path []string) {
-	d.printLine(strings.Join(path, " > "), 0, 0)
+	d.printLineInvert(strings.Join(path, " > "), 0, 0)
 }
 
 func (d *TbUiDriver) DisplayContent(content string) {
@@ -109,7 +113,6 @@ func (d *TbUiDriver) ClearContent() {
 
 func (d *TbUiDriver) CleanUp() {
 	termbox.Close()
-	fmt.Println("cleaned up")
 }
 
 //// end UiDriver methods ////
@@ -120,11 +123,25 @@ func (d *TbUiDriver) clearLine(x, y int) {
 	}
 	termbox.Flush()
 }
+func (d *TbUiDriver) clearLineInvert(x, y int) {
+	for i := x; i < d.w; i++ {
+		termbox.SetCell(i, y, ' ', TB_BG, TB_FG)
+	}
+	termbox.Flush()
+}
 
 func (d *TbUiDriver) printLine(msg string, x, y int) {
 	d.clearLine(x, y)
 	for i, c := range msg {
 		termbox.SetCell(x+i, y, c, TB_FG, TB_BG)
+	}
+	termbox.Flush()
+}
+
+func (d *TbUiDriver) printLineInvert(msg string, x, y int) {
+	d.clearLineInvert(x, y)
+	for i, c := range msg {
+		termbox.SetCell(x+i, y, c, TB_BG, TB_FG)
 	}
 	termbox.Flush()
 }
