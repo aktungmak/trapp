@@ -19,13 +19,13 @@ type OptMap map[string]*Node
 // or both
 type Node struct {
 	Name string
-	Func func(*Trapp)
+	Func func(*Cc)
 	Opts OptMap
 
 	parent *Node
 }
 
-func NewNode(name string, f func(*Trapp), opts OptMap) *Node {
+func NewNode(name string, f func(*Cc), opts OptMap) *Node {
 	return &Node{
 		Name: name,
 		Func: f,
@@ -35,7 +35,7 @@ func NewNode(name string, f func(*Trapp), opts OptMap) *Node {
 func NewNodeBlank() *Node {
 	return &Node{
 		Name: "",
-		Func: func(*Trapp) {},
+		Func: func(*Cc) {},
 		Opts: make(OptMap),
 	}
 }
@@ -85,7 +85,7 @@ func (t *Trapp) Select(opt string) error {
 
 	// execute the func if specified
 	if next.Func != nil {
-		next.Func(t)
+		next.Func(t.Cc)
 	}
 
 	// if it has options, change to that

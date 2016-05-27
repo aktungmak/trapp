@@ -1,24 +1,24 @@
 {
-    "name": "home",
-    "opts": {
+    "Name": "home",
+    "Opts": {
         "a": {
-            "func": "af",
-            "name": "ay"
+            "Func": "af",
+            "Name": "ay"
         },
         "b": {
-            "func": "bf",
-            "name": "bee"
+            "Func": "bf",
+            "Name": "bee"
         },
         "c": {
-            "name": "see",
-            "opts": {
+            "Name": "see",
+            "Opts": {
                 "a": {
-                    "func": "caf",
-                    "name": "cay"
+                    "Func": "caf",
+                    "Name": "cay"
                 },
                 "b": {
-                    "func": "cbf",
-                    "name": "cbee"
+                    "Func": "cbf",
+                    "Name": "cbee"
                 }
             }
         }
