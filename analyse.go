@@ -27,15 +27,18 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, erro
     // if it is not there, bail out with an error
     meth, ok := cct.MethodByName(cn.Func)
     if !ok {
-        return nil, errors.Errorf("method %s used in config but not defined", fname)
+        return nil, errors.New("method used in config but not defined: "+cn.Func)
     }
+    n.Func = meth.Func.Interface().(func(*Cc))
 
     // now iterate through the opts, making a new Node for each
-    n.Opts = make(map[string]Node)
+    n.Opts = make(OptMap)
 	for k, v := range cn.Opts {
-		n.Opts[k], err := NewNodeFromCfgNode(v, n, cct)
+		nn, err := NewNodeFromCfgNode(v, n, cct)
         if err != nil {
             return nil, err
+        } else {
+            n.Opts[k] = nn
         }
 	}
     
@@ -47,10 +50,10 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, erro
 // the structure cc represents the state of the app, 
 // and should have methods with the same name as the 
 // "func" fields in the json.
-func ProcessJsonConfig(json string, cc Cc) (*Node, error) {
+func ProcessJsonConfig(data []byte, cc Cc) (*Node, error) {
     // parse the json as a tree of CfgNodes first
     cn := CfgNode{}
-	err := json.Unmarshal([]byte(data), &cn)
+	err := json.Unmarshal(data, &cn)
     if err != nil {
         return nil, err
     }
@@ -64,4 +67,5 @@ func ProcessJsonConfig(json string, cc Cc) (*Node, error) {
         return nil, err
     } else {
         return n, nil
+    }
 }
