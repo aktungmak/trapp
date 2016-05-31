@@ -25,21 +25,6 @@ type Node struct {
 	parent *Node
 }
 
-func NewNode(name string, f func(*Cc), opts OptMap) *Node {
-	return &Node{
-		Name: name,
-		Func: f,
-		Opts: opts,
-	}
-}
-func NewNodeBlank() *Node {
-	return &Node{
-		Name: "",
-		Func: func(*Cc) {},
-		Opts: make(OptMap),
-	}
-}
-
 // tree application core.
 type Trapp struct {
 	// the base of the tree
@@ -65,7 +50,6 @@ func NewTrapp(tree *Node, ui UiDriver, cc *Cc) *Trapp {
 
 func (t *Trapp) Select(opt string) error {
 	// first check for special
-
 	switch opt {
 	case UP:
 		t.Up()
