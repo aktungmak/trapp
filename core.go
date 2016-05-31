@@ -15,11 +15,10 @@ const (
 type OptMap map[string]*Node
 
 // represents a single node of the tree
-// can have children nodes, or a function
-// or both
+// can have children nodes, or a function or both
 type Node struct {
 	Name string
-	Func func(*Cc)
+	Func func(Cc)
 	Opts OptMap
 
 	parent *Node
@@ -34,10 +33,10 @@ type Trapp struct {
 	// our link to the outside world
 	Ui UiDriver
 	// current-continuation, represents the app data
-	Cc *Cc
+	Cc Cc
 }
 
-func NewTrapp(tree *Node, ui UiDriver, cc *Cc) *Trapp {
+func NewTrapp(tree *Node, ui UiDriver, cc Cc) *Trapp {
 	t := &Trapp{
 		Root:    tree,
 		Current: tree,

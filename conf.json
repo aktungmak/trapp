@@ -2,22 +2,22 @@
     "Name": "home",
     "Opts": {
         "a": {
-            "Func": "af",
+            "Func": "M1",
             "Name": "ay"
         },
         "b": {
-            "Func": "bf",
+            "Func": "M2",
             "Name": "bee"
         },
         "c": {
             "Name": "see",
             "Opts": {
                 "a": {
-                    "Func": "caf",
+                    "Func": "M3",
                     "Name": "cay"
                 },
                 "b": {
-                    "Func": "cbf",
+                    "Func": "M1",
                     "Name": "cbee"
                 }
             }
