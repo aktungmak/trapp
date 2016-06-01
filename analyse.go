@@ -3,7 +3,6 @@ package trapp
 import (
 	"encoding/json"
 	"errors"
-	"reflect"
 )
 
 // Cc is a struct with a number of custom methods
@@ -22,7 +21,7 @@ type CfgNode struct {
 	Opts map[string]CfgNode
 }
 
-func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, error) {
+func NewNodeFromCfgNode(cn CfgNode, parent *Node, fmap FuncMap) (*Node, error) {
 	n := &Node{}
 	n.Name = cn.Name
 	n.parent = parent
@@ -30,11 +29,11 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, erro
 	// if there is a func field, look up the method on cc
 	// if it is not defined, bail out with an error
 	if cn.Func != "" {
-		field, ok := cct.FieldByName(cn.Func)
+		field, ok := fmap[cn.Func]
 		if !ok {
 			return nil, errors.New("method used in config but not defined: " + cn.Func)
 		}
-		n.Func = field.Type.Interface().(func(Cc))
+		n.Func = field
 	} else {
 		// if not defined, just do nothing
 		n.Func = func(Cc) {}
@@ -43,7 +42,7 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, erro
 	// now iterate through the opts, making a new Node for each
 	n.Opts = make(OptMap)
 	for k, v := range cn.Opts {
-		nn, err := NewNodeFromCfgNode(v, n, cct)
+		nn, err := NewNodeFromCfgNode(v, n, fmap)
 		if err != nil {
 			return nil, err
 		} else {
@@ -56,10 +55,9 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, cct reflect.Type) (*Node, erro
 
 // given a json string, parse it into a tree structure
 // of nodes, representing the structure of the application.
-// the structure cc represents the state of the app,
-// and should have methods with the same name as the
-// "func" fields in the json.
-func ProcessJsonConfig(data []byte, cc Cc) (*Node, error) {
+// fmap links string names to actual functions, which may be used
+// multiple times in the tree.
+func ProcessJsonConfig(data []byte, fmap FuncMap) (*Node, error) {
 	// parse the json as a tree of CfgNodes first
 	cn := CfgNode{}
 	err := json.Unmarshal(data, &cn)
@@ -67,11 +65,8 @@ func ProcessJsonConfig(data []byte, cc Cc) (*Node, error) {
 		return nil, err
 	}
 
-	// get the reflect representation of cc's type
-	cct := reflect.TypeOf(cc)
-
 	// recursively create the real Node from CfgNode
-	n, err := NewNodeFromCfgNode(cn, nil, cct)
+	n, err := NewNodeFromCfgNode(cn, nil, fmap)
 	if err != nil {
 		return nil, err
 	} else {
