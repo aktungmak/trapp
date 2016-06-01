@@ -101,6 +101,7 @@ func (d *TbUiDriver) DisplayContent(content string) {
 	for i, line := range lines {
 		// todo handle /r/n
 		d.printLine(line, 0, i+1)
+        // trim off content that won't fit
 		if i+1 > d.h-3 {
 			break
 		}
@@ -109,6 +110,7 @@ func (d *TbUiDriver) DisplayContent(content string) {
 
 func (d *TbUiDriver) ClearContent() {
 	termbox.Clear(TB_FG, TB_BG)
+    termbox.Flush()
 }
 
 func (d *TbUiDriver) CleanUp() {

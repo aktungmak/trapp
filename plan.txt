@@ -25,3 +25,10 @@ type Node struct {
 }
 
 the application holds a list of all the nodes visited so far, which allows us to navigate back up the tree
+
+ideas:
+
+- allow the user to provide arguments to the options
+	eg :addr 192.168.32.21 lets the app get some input
+
+- use up arrow for history, and tab completeion. maybe readline can help here?

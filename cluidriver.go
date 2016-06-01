@@ -51,10 +51,15 @@ func (d *ClUiDriver) Prompt(prompt string) string {
 }
 
 func (d *ClUiDriver) DisplayOpts(opts map[string]string) {
-	fmt.Printf("%v", opts)
+    fmt.Print("[ ")
+    for opt, name := range opts {
+        fmt.Printf("%s:%s ", opt, name)
+    }
+    fmt.Print("]")
 }
 
 func (d *ClUiDriver) DisplayPath(path []string) {
+	fmt.Println("")
 	fmt.Println(strings.Join(path, " > "))
 }
 
