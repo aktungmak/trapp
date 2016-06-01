@@ -18,7 +18,7 @@ type OptMap map[string]*Node
 // can have children nodes, or a function or both
 type Node struct {
 	Name string
-	Func func(Cc)
+	Func func(Cc)string
 	Opts OptMap
 
 	parent *Node
@@ -47,28 +47,29 @@ func NewTrapp(tree *Node, ui UiDriver, cc Cc) *Trapp {
 	return t
 }
 
-func (t *Trapp) Select(opt string) error {
+func (t *Trapp) Select(opt string) (string, error) {
 	// first check for special
 	switch opt {
 	case UP:
 		t.Up()
-		return nil
+		return "", nil
 	case HOME:
 		t.Home()
-		return nil
+		return "", nil
 	case QUIT:
-		return errors.New(QUIT)
+		return "", errors.New(QUIT)
 	}
 
 	// now check for regular options
 	next, ok := t.Current.Opts[opt]
 	if !ok {
-		return errors.New("not a valid option")
+		return "", errors.New("not a valid option")
 	}
 
-	// execute the func if specified
+	// execute the func if specified and get its output
+    var output string
 	if next.Func != nil {
-		next.Func(t.Cc)
+		output = next.Func(t.Cc)
 	}
 
 	// if it has options, change to that
@@ -77,7 +78,7 @@ func (t *Trapp) Select(opt string) error {
 		next.parent = t.Current
 		t.Current = next
 	}
-	return nil
+	return output, nil
 }
 
 // go up one level, setting t.Current to its parent
@@ -118,14 +119,16 @@ func (t *Trapp) EventLoop() {
 		t.Ui.ClearContent()
 		// if we got something, try selecting
 		if len(opt) > 0 {
-			err := t.Select(opt)
+			output, err := t.Select(opt)
 			if err != nil {
 				if err.Error() == QUIT {
 					break
 				} else {
 					t.Ui.DisplayContent(err.Error())
 				}
-			}
+			} else {
+                t.Ui.DisplayContent(output)
+            }
 		}
 	}
 }

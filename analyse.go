@@ -12,7 +12,7 @@ import (
 type Cc interface{}
 
 // represents a mapping between functions and their names
-type FuncMap map[string]func(Cc)
+type FuncMap map[string]func(Cc)string
 
 // represents a node in the config, where all fields are string
 type CfgNode struct {
@@ -36,7 +36,7 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, fmap FuncMap) (*Node, error) {
 		n.Func = field
 	} else {
 		// if not defined, just do nothing
-		n.Func = func(Cc) {}
+		n.Func = func(Cc)string { return "" }
 	}
 
 	// now iterate through the opts, making a new Node for each
