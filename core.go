@@ -18,7 +18,7 @@ type OptMap map[string]*Node
 // can have children nodes, or a function or both
 type Node struct {
 	Name string
-	Func func(Cc)string
+	Func func(AppState)string
 	Opts OptMap
 
 	parent *Node
@@ -33,15 +33,15 @@ type Trapp struct {
 	// our link to the outside world
 	Ui UiDriver
 	// current-continuation, represents the app data
-	Cc Cc
+	AppState AppState
 }
 
-func NewTrapp(tree *Node, ui UiDriver, cc Cc) *Trapp {
+func NewTrapp(tree *Node, ui UiDriver, as AppState) *Trapp {
 	t := &Trapp{
 		Root:    tree,
 		Current: tree,
 		Ui:      ui,
-		Cc:      cc,
+		AppState:      as,
 	}
 
 	return t
@@ -69,7 +69,7 @@ func (t *Trapp) Select(opt string) (string, error) {
 	// execute the func if specified and get its output
     var output string
 	if next.Func != nil {
-		output = next.Func(t.Cc)
+		output = next.Func(t.AppState)
 	}
 
 	// if it has options, change to that

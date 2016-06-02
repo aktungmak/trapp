@@ -5,14 +5,14 @@ import (
 	"errors"
 )
 
-// Cc is a struct with a number of custom methods
+// AppState is a struct with a number of custom methods
 // which specify what the application can do.
 // The fields of the struct are the variables
 // defining the application's state.
-type Cc interface{}
+type AppState interface{}
 
 // represents a mapping between functions and their names
-type FuncMap map[string]func(Cc)string
+type FuncMap map[string]func(AppState)string
 
 // represents a node in the config, where all fields are string
 type CfgNode struct {
@@ -26,8 +26,8 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, fmap FuncMap) (*Node, error) {
 	n.Name = cn.Name
 	n.parent = parent
 
-	// if there is a func field, look up the method on cc
-	// if it is not defined, bail out with an error
+	// if there is a func field, look up the method in fmap
+	// if it is not in fmap, bail out with an error
 	if cn.Func != "" {
 		field, ok := fmap[cn.Func]
 		if !ok {
@@ -36,10 +36,10 @@ func NewNodeFromCfgNode(cn CfgNode, parent *Node, fmap FuncMap) (*Node, error) {
 		n.Func = field
 	} else {
 		// if not defined, just do nothing
-		n.Func = func(Cc)string { return "" }
+		n.Func = func(AppState)string { return "" }
 	}
 
-	// now iterate through the opts, making a new Node for each
+	// now iterate through the opts, recursively making a new Node 
 	n.Opts = make(OptMap)
 	for k, v := range cn.Opts {
 		nn, err := NewNodeFromCfgNode(v, n, fmap)
