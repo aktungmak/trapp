@@ -2,29 +2,36 @@ the core is the application state, which holds the tree and our current position
 
 there is an interface which describes how a ui needs to communicate, it has the following methods:
 
-promptUnbuffered(prompt string) string
-promptBuffered(prompt string) string
-displayPath(path []string)
-displayContent(content string)
-clearContent()
+type UiDriver interface {
+	Prompt(string) string
+	DisplayPath([]string)
+	DisplayOpts(map[string]string)
+	DisplayContent(string)
+	ClearContent()
+	CleanUp()
+}
 
 each ui 'driver' implements these methods to display the output as it pleases. it is envisioned that there will be a line at the top which shows the current path, a central content area and then the prompt at the bottom which will accept the options.
 
-Each of the "actions" will take a ptr to the application struct and then manipulate it as neccessary. it can use the ui methods described above to get further input as neccessary.
+Each of the "actions" will take a ptr to the application state struct and then manipulate it as neccessary. 
+at the moment there is no way for the application to get input other that the options it specifies.
 
 the ui driver handles all interactions with the user, so the application engine knows nothing about how the info is actually presented.
 
-the application is described in terms of map[string]Node. eventually this could be generated from an XML file, but initially it can be written out by hand.
+the application is described in terms of Nodes, with and OptMap field which lists the possible options that can be selected from this point.
+This structure is described by a JSON file, which is processed and from this the tree of Nodes is built. A separate map (FuncMap) is used to correspond the string names of functions to the actual function values.
 
 a Node struct looks like this:
 
 type Node struct {
-     name string
-     func func(c *appState)
-     children map[string]Node
+	Name string
+	Func func(Cc)string
+	Opts OptMap
+
+	parent *Node
 }
 
-the application holds a list of all the nodes visited so far, which allows us to navigate back up the tree
+the parent pointer forms a linked list list of all the nodes visited so far, which allows us to navigate back up the tree.
 
 ideas:
 
