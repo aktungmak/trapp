@@ -8,6 +8,7 @@ import (
 const (
 	TB_BG = termbox.ColorBlue
 	TB_FG = termbox.ColorWhite
+    WRAP = true
 )
 
 // this driver uses terbox to display the ui
@@ -85,7 +86,6 @@ promptloop:
 
 func (d *TbUiDriver) DisplayOpts(opts map[string]string) {
 	s := make([]string, 0)
-	// todo make this tidier
 	for k, v := range opts {
 		s = append(s, k+": "+v)
 	}
@@ -97,9 +97,12 @@ func (d *TbUiDriver) DisplayPath(path []string) {
 }
 
 func (d *TbUiDriver) DisplayContent(content string) {
+    content = strings.Replace(content, "\r", "", -1)
 	lines := strings.Split(content, "\n")
+
+    // TODO wrap lines that are too long
+
 	for i, line := range lines {
-		// todo handle /r/n
 		d.printLine(line, 0, i+1)
         // trim off content that won't fit
 		if i+1 > d.h-3 {
